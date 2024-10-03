@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import multer from "multer";
 import sharp from "sharp";
-import { LookoutVisionClient, StartModelCommand, DetectAnomaliesCommand } from "@aws-sdk/client-lookoutvision";
+import { LookoutVisionClient, StartModelCommand, DetectAnomaliesCommand, StopModelCommand } from "@aws-sdk/client-lookoutvision";
 
 dotenv.config();
 
@@ -39,6 +39,25 @@ app.post("/start-model", async (req, res) => {
     console.error("Error starting LookoutVision model:", error);
     res.status(500).json({ error: error.message });
   }
+});
+
+app.post("/stop-model", async (req, res) => {
+    const { projectName, modelVersion } = req.body;
+    
+    const input = {
+        ProjectName: projectName,
+        ModelVersion: modelVersion,
+    };
+    
+    try {
+        const command = new StopModelCommand(input);
+        const response = await lookoutVisionClient.send(command);
+        
+        res.json(response);
+    } catch (error) {
+        console.error("Error stopping LookoutVision model:", error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 const storage = multer.memoryStorage();
